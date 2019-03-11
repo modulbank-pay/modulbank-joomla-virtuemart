@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="2.5" type="plugin" group="vmpayment" method="upgrade">
+    <name>Modulbank Payment</name>
+    <creationDate>January 2019</creationDate>
+    <author>Modulbank</author>
+    <authorUrl>https://modulbank.ru</authorUrl>
+    <copyright>(c)АО КБ «Модульбанк»</copyright>
+    <license></license>
+    <version>1.0.0</version>
+    <description>Modulbank Payment plugin</description>
+    <languages>
+	<language tag="en-GB">en-GB.plg_vmpayment_modulbank.ini</language>
+	<language tag="ru-RU">ru-RU.plg_vmpayment_modulbank.ini</language>
+    </languages>
+    <files>
+	<filename plugin="modulbank">modulbank.php</filename>
+	<filename>index.html</filename>
+    <filename>modulbank.png</filename>
+    <folder>modulbanklib</folder>
+    <folder>fields</folder>
+    </files>
+    <vmconfig>
+        <fields name="params">
+            <fieldset name="basic" addfieldpath="/administrator/components/com_virtuemart/fields">
+                <field type="vmtitle" default="Основные параметры"/>
+	<field	name="payment_logos" type="vmfiles" label="Логотип"
+		description="Из папки /plugins/vmpayment/modulbank "
+		directory="/plugins/vmpayment/modulbank"
+		default="" hide_default="1"
+		stripext="0"   exclude="php|html|xml|wsdl|ini|vm2" />
+    <field type="curl" addfieldpath="/plugins/vmpayment/modulbank/fields" />
+ 	<field type="text" name="merchantId"  size="50" label="Мерчант"
+             default="" description="" />
+    <field type="text" name="secretKey"  size="50" label="Секретный ключ"
+             default="" description="" />
+    <field type="text" name="secretKeyTest"  size="50" label="Тестовый секретный ключ"
+             default="" description="" />
+     <field type="list" name="mode" default="test" label="Режим" description="">
+				<option value="test">Тестовый</option>
+				<option value="prod">Боевой</option>
+     </field>
+
+    <field type="link" name="successUrl"  size="50" label="Адрес для перехода после успешной оплаты"
+             default="index.php?option=com_virtuemart&amp;view=vmplg&amp;task=pluginresponsereceived" description="" />
+    <field type="link" name="failUrl"  size="50" label="Адрес для перехода после ошибки при оплате"
+             default="index.php?option=com_virtuemart&amp;view=vmplg&amp;task=pluginresponsereceived" description="" />
+    <field type="link" name="cancelUrl"  size="50" label="Адрес для перехода в случае нажатия кнопки «Вернуться в магазин»"
+             default="index.php?option=com_virtuemart&amp;view=cart" description="" />
+
+     <field name="orderStatus" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус заказа после оформления" description="" />
+     <field name="statusForPayment" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус для оплаты" description="" />
+     <field name="statusSuccess" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус оплаченного заказа" description="" />
+     <field name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
+     <field name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
+    <field type="vmtitle" default="Печать чеков"/>
+     <field type="list" name="taxSystem" label="Система налогооблажения" default="1">
+        <option value="osn">общая СН</option>
+        <option value="usn_income">упрощенная СН (доходы)</option>
+        <option value="usn_income_outcome">упрощенная СН (доходы минус расходы)</option>
+        <option value="envd">единый налог на вмененный доход</option>
+        <option value="esn">единый сельскохозяйственный налог</option>
+        <option value="patent">патентная СН</option>
+     </field>
+     <field type="list" name="tax" label="Ставка НДС на товары" default="1">
+        <option value="none">без НДС</option>
+        <option value="vat0">НДС по ставке 0%</option>
+        <option value="vat10">НДС чека по ставке 10%</option>
+        <option value="vat20">НДС чека по ставке 20%</option>
+        <option value="vat110">НДС чека по расчетной ставке 10/110</option>
+        <option value="vat120">НДС чека по расчетной ставке 20/120</option>
+     </field>
+     <field type="list" name="taxDelivery" label="Ставка НДС на доставку" default="1">
+        <option value="none">без НДС</option>
+        <option value="vat0">НДС по ставке 0%</option>
+        <option value="vat10">НДС чека по ставке 10%</option>
+        <option value="vat20">НДС чека по ставке 20%</option>
+        <option value="vat110">НДС чека по расчетной ставке 10/110</option>
+        <option value="vat120">НДС чека по расчетной ставке 20/120</option>
+     </field>
+     <field type="list" name="paymentObjectType" default="commodity" label="Признак предмета расчета" description="категория товара для налоговой">
+        <option value="commodity">товар</option>
+        <option value="excise">подакцизный товар</option>
+        <option value="job">работа</option>
+        <option value="service">услуга</option>
+        <option value="gambling_bet">ставка в азартной игре</option>
+        <option value="gambling_prize">выигрыш в азартной игре</option>
+        <option value="lottery">лотерейный билет</option>
+        <option value="lottery_prize">выигрыш в лотерею</option>
+        <option value="intellectual_activity">результаты интеллектуальной деятельности</option>
+        <option value="payment">платеж</option>
+        <option value="agent_commission">агентское вознаграждение</option>
+        <option value="composite">несколько вариантов</option>
+        <option value="another">другое</option>
+     </field>
+     <field type="list" name="deliveryPaymentObjectType" default="service" label="Признак предмета расчета на доставку" description="">
+        <option value="commodity">товар</option>
+        <option value="excise">подакцизный товар</option>
+        <option value="job">работа</option>
+        <option value="service">услуга</option>
+        <option value="gambling_bet">ставка в азартной игре</option>
+        <option value="gambling_prize">выигрыш в азартной игре</option>
+        <option value="lottery">лотерейный билет</option>
+        <option value="lottery_prize">выигрыш в лотерею</option>
+        <option value="intellectual_activity">результаты интеллектуальной деятельности</option>
+        <option value="payment">платеж</option>
+        <option value="agent_commission">агентское вознаграждение</option>
+        <option value="composite">несколько вариантов</option>
+        <option value="another">другое</option>
+     </field>
+     <field type="list" name="paymentMethodType" default="full_payment" label="Признак способа расчета" description="категория способа оплаты для налоговой">
+        <option value="full_prepayment">полная предоплата</option>
+        <option value="partial_prepayment">частичная предоплата</option>
+        <option value="advance">аванс</option>
+        <option value="full_payment">полный расчет</option>
+        <option value="partial_payment">частичный расчет и кредит</option>
+        <option value="credit">кредит</option>
+        <option value="credit_payment">выплата по кредиту</option>
+     </field>
+    <field type="vmtitle" default="Остальные"/>
+    <field type="list" name="logging" default="1" label="Логирование" description="">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+     </field>
+     <field type="logs" name="logSize"  size="50" label="Ограничение размеров лога (Mb)"
+             default="10" description="" />
+	<field name="countries" type="vmcountries"  scope="com_virtuemart" default="" label="VMPAYMENT_MODULBANK_COUNTRIES" description="VMPAYMENT_MODULBANK_COUNTRIES_DESC"/>
+    <field name="payment_currency" type="vmacceptedcurrency" default="" label="VMPAYMENT_MODULBANK_CURRENCY" description="VMPAYMENT_MODULBANK_CURRENCY_DESC" />
+	<field name="min_amount" type="text"  label="VMPAYMENT_MODULBANK_MIN_AMOUNT" description="VMPAYMENT_MODULBANK_MIN_AMOUNT_EXPLAIN" />
+	<field name="max_amount" type="text"  label="VMPAYMENT_MODULBANK_MAX_AMOUNT" description="VMPAYMENT_MODULBANK_MAX_AMOUNT_EXPLAIN" />
+	<field name="cost_per_transaction" type="text"  label="VMPAYMENT_MODULBANK_COST_PER_TRANSACTION" description="VMPAYMENT_MODULBANK_COST_PER_TRANSACTION_EXPLAIN" />
+	<field name="cost_percent_total" type="text"  label="VMPAYMENT_MODULBANK_COST_PERCENT_TOTAL" description="VMPAYMENT_MODULBANK_COST_PERCENT_TOTAL_EXPLAIN" />
+	<field name="tax_id" type="vmtaxes" scope="com_virtuemart"  label="VMPAYMENT_MODULBANK_TAX" description="VMPAYMENT_MODULBANK_TAX_DESC" />
+    </fieldset>
+
+    </fields>
+</vmconfig>
+<params addpath="/administrator/components/com_virtuemart/elements">
+    <param type="vmjpluginwarning" />
+    <param type="vmtitle" default="Основные параметры"/>
+    <param  name="payment_logos" type="vmfiles" label="VMPAYMENT_MODULBANK_LOGOS"
+        description="VMPAYMENT_MODULBANK_LOGOS_DESC"
+        directory="/plugins/vmpayment/modulbank"
+        default="" hide_default="1"
+        stripext="0"   exclude="php|html|xml|wsdl|ini|vm2" />
+
+    <param type="text" name="merchantId"  size="50" label="Мерчант"
+             default="" description="" />
+    <param type="text" name="secretKey"  size="50" label="Секретный ключ"
+             default="" description="" />
+    <param type="text" name="secretKeyTest"  size="50" label="Тестовый секретный ключ"
+             default="" description="" />
+     <param type="list" name="mode" default="1" label="Режим" description="">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+     </param>
+
+    <param type="link" name="successUrl"  size="50" label="Адрес для перехода после успешной оплаты"
+             default="index.php?option=com_virtuemart&amp;view=vmplg&amp;task=pluginresponsereceived" description="" />
+    <param type="link" name="failUrl"  size="50" label="Адрес для перехода после ошибки при оплате"
+             default="index.php?option=com_virtuemart&amp;view=vmplg&amp;task=pluginresponsereceived" description="" />
+    <param type="link" name="cancelUrl"  size="50" label="Адрес для перехода в случае нажатия кнопки «Вернуться в магазин»"
+             default="index.php?option=com_virtuemart&amp;view=cart" description="" />
+
+     <param name="orderStatus" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус заказа после оформления" description="VMPAYMENT_MODULBANK_STATUS_PENDING_DESC" />
+     <param name="statusForPayment" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус для оплаты" description="" />
+     <param name="statusSuccess" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_MODULBANK_STATUS_SUCCESS" description="VMPAYMENT_MODULBANK_STATUS_SUCCESS_DESC" />
+     <param name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
+     <param name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
+    <param type="vmtitle" default="Печать чеков"/>
+     <param type="list" name="taxSystem" label="Система налогооблажения" default="1">
+        <option value="osn">общая СН</option>
+        <option value="usn_income">упрощенная СН (доходы)</option>
+        <option value="usn_income_outcome">упрощенная СН (доходы минус расходы)</option>
+        <option value="envd">единый налог на вмененный доход</option>
+        <option value="esn">единый сельскохозяйственный налог</option>
+        <option value="patent">патентная СН</option>
+     </param>
+     <param type="list" name="tax" label="Ставка НДС на товары" default="1">
+        <option value="none">без НДС</option>
+        <option value="vat0">НДС по ставке 0%</option>
+        <option value="vat10">НДС чека по ставке 10%</option>
+        <option value="vat20">НДС чека по ставке 20%</option>
+        <option value="vat110">НДС чека по расчетной ставке 10/110</option>
+        <option value="vat120">НДС чека по расчетной ставке 20/120</option>
+     </param>
+     <param type="list" name="taxdelivery" label="Ставка НДС на доставку" default="1">
+        <option value="none">без НДС</option>
+        <option value="vat0">НДС по ставке 0%</option>
+        <option value="vat10">НДС чека по ставке 10%</option>
+        <option value="vat20">НДС чека по ставке 20%</option>
+        <option value="vat110">НДС чека по расчетной ставке 10/110</option>
+        <option value="vat120">НДС чека по расчетной ставке 20/120</option>
+     </param>
+     <param type="list" name="paymentObjectType" default="commodity" label="Признак предмета расчета" description="категория товара для налоговой">
+        <option value="commodity">товар</option>
+        <option value="excise">подакцизный товар</option>
+        <option value="job">работа</option>
+        <option value="service">услуга</option>
+        <option value="gambling_bet">ставка в азартной игре</option>
+        <option value="gambling_prize">выигрыш в азартной игре</option>
+        <option value="lottery">лотерейный билет</option>
+        <option value="lottery_prize">выигрыш в лотерею</option>
+        <option value="intellectual_activity">результаты интеллектуальной деятельности</option>
+        <option value="payment">платеж</option>
+        <option value="agent_commission">агентское вознаграждение</option>
+        <option value="composite">несколько вариантов</option>
+        <option value="another">другое</option>
+     </param>
+     <param type="list" name="deliveryPaymentObjectType" default="service" label="Признак предмета расчета на доставку" description="">
+        <option value="commodity">товар</option>
+        <option value="excise">подакцизный товар</option>
+        <option value="job">работа</option>
+        <option value="service">услуга</option>
+        <option value="gambling_bet">ставка в азартной игре</option>
+        <option value="gambling_prize">выигрыш в азартной игре</option>
+        <option value="lottery">лотерейный билет</option>
+        <option value="lottery_prize">выигрыш в лотерею</option>
+        <option value="intellectual_activity">результаты интеллектуальной деятельности</option>
+        <option value="payment">платеж</option>
+        <option value="agent_commission">агентское вознаграждение</option>
+        <option value="composite">несколько вариантов</option>
+        <option value="another">другое</option>
+     </param>
+     <param type="list" name="paymentMethodType" default="full_payment" label="Признак способа расчета" description="категория способа оплаты для налоговой">
+        <option value="full_prepayment">полная предоплата</option>
+        <option value="partial_prepayment">частичная предоплата</option>
+        <option value="advance">аванс</option>
+        <option value="full_payment">полный расчет</option>
+        <option value="partial_payment">частичный расчет и кредит</option>
+        <option value="credit">кредит</option>
+        <option value="credit_payment">выплата по кредиту</option>
+     </param>
+    <param type="vmtitle" default="Остальные"/>
+    <param type="list" name="logging" default="1" label="Логирование" description="">
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+     </param>
+     <param type="text" name="logSize"  size="50" label="Ограничение размеров лога (Mb)"
+             default="" description="" />
+    <param name="countries" type="vmcountries"  scope="com_virtuemart" default="" label="VMPAYMENT_MODULBANK_COUNTRIES" description="VMPAYMENT_MODULBANK_COUNTRIES_DESC"/>
+    <param name="payment_currency" type="vmacceptedcurrency" default="" label="VMPAYMENT_MODULBANK_CURRENCY" description="VMPAYMENT_MODULBANK_CURRENCY_DESC" />
+    <param name="min_amount" type="text"  label="VMPAYMENT_MODULBANK_MIN_AMOUNT" description="VMPAYMENT_MODULBANK_MIN_AMOUNT_EXPLAIN" />
+    <param name="max_amount" type="text"  label="VMPAYMENT_MODULBANK_MAX_AMOUNT" description="VMPAYMENT_MODULBANK_MAX_AMOUNT_EXPLAIN" />
+    <param name="cost_per_transaction" type="text"  label="VMPAYMENT_MODULBANK_COST_PER_TRANSACTION" description="VMPAYMENT_MODULBANK_COST_PER_TRANSACTION_EXPLAIN" />
+    <param name="cost_percent_total" type="text"  label="VMPAYMENT_MODULBANK_COST_PERCENT_TOTAL" description="VMPAYMENT_MODULBANK_COST_PERCENT_TOTAL_EXPLAIN" />
+    <param name="tax_id" type="vmtaxes" scope="com_virtuemart"  label="VMPAYMENT_MODULBANK_TAX" description="VMPAYMENT_MODULBANK_TAX_DESC" />
+    </params>
+
+</extension>
