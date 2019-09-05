@@ -31,7 +31,9 @@ class JFormFieldCurl extends JFormField {
 	protected function getInput() {
 
 		VmConfig::loadConfig();
-		vmLanguage::loadJLang('com_virtuemart');
+		if (class_exists("vmLanguage")) {
+			vmLanguage::loadJLang('com_virtuemart');
+		}
 
 		$option = vRequest::getCmd('option');
 		if (!function_exists('curl_init') or !function_exists('curl_exec')) {
