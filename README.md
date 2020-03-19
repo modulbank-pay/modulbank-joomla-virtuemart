@@ -2,7 +2,7 @@
 
 Модуль позволяет принимать платежи банковской картой через Модульбанк.
 
-[Скачать модуль](https://github.com/modulbank-pay/modulbank-joomla-virtuemart/releases/download/v1.0.2/modulbank_virtuemart_1.0.2.zip)
+[Скачать модуль](https://github.com/modulbank-pay/modulbank-joomla-virtuemart/releases/download/1.0.3/modulbank_virtuemart_1.0.3.zip)
 
 ### Установка
 
