@@ -609,6 +609,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 	{
 		$key       = $this->method->mode == 'test' ? $this->method->secretKeyTest : $this->method->secretKey;
 		$post      = JRequest::get('post');
+		unset($post['view']);
 		$signature = ModulbankHelper::calcSignature($key, $post);
 		return strcasecmp($signature, JRequest::getVar('signature')) == 0;
 	}
