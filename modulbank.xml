@@ -6,11 +6,7 @@
     <authorUrl>https://modulbank.ru</authorUrl>
     <copyright>(c)АО КБ «Модульбанк»</copyright>
     <license></license>
-<<<<<<< HEAD
-    <version>1.0.3</version>
-=======
     <version>1.1.0</version>
->>>>>>> hold
     <description>Modulbank Payment plugin</description>
     <languages>
 	<language tag="en-GB">en-GB.plg_vmpayment_modulbank.ini</language>
