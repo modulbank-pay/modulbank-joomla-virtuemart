@@ -25,7 +25,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 	{
 		if (JRequest::getVar('download_modulbank_logs', 0) == 1) {
 			$user = JFactory::getUser();
-			if ($user->authorise('core.manage','com_virtuemart')) {
+			if ($user->authorise('core.manage', 'com_virtuemart')) {
 				ModulbankHelper::sendPackedLogs(JFactory::getConfig()->get('log_path'));
 			}
 			jexit();
@@ -59,6 +59,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 				'secretKey'                 => array('', 'string'),
 				'secretKeyTest'             => array('', 'string'),
 				'mode'                      => array('', 'string'),
+				'preauth'                   => array('', 'int'),
 				'successUrl'                => array('', 'string'),
 				'failUrl'                   => array('', 'string'),
 				'cancelUrl'                 => array('', 'string'),
@@ -66,6 +67,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 				'statusSuccess'             => array('U', 'string'),
 				'statusForPayment'          => array('C', 'string'),
 				'orderStatusRefund'         => array('P', 'string'),
+				'statusForCapture'          => array('C', 'string'),
 				'paymentMessage'            => array('', 'string'),
 				'taxSystem'                 => array('usn', 'string'),
 				'tax'                       => array('none', 'string'),
@@ -189,20 +191,13 @@ class plgVmPaymentModulbank extends vmPSPlugin
 			'cms'      => $this->getCmsVersion(),
 		];
 		if ($printButton) {
-			$receipt  = new ModulbankReceipt($this->method->taxSystem, $this->method->paymentMethodType, $totalInPaymentCurrency);
-			$shipping = $order['details']['BT']->order_shipment + $order['details']['BT']->order_shipment_tax;
-			foreach ($order['items'] as $item) {
-				$receipt->addItem($item->order_item_name, $item->product_final_price, $this->method->tax, $this->method->paymentObjectType, $item->product_quantity);
-			}
-			if ($shipping > 0) {
-				$receipt->addItem('Доставка', $shipping, $this->method->taxDelivery, $this->method->deliveryPaymentObjectType);
-			}
 			$linkAppend = '&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id . '&Itemid=' . vRequest::getInt('Itemid');
 			$data       = [
 				'merchant'        => $this->method->merchantId,
 				'amount'          => $totalInPaymentCurrency,
 				'order_id'        => $orderNumber,
 				'testing'         => $this->method->mode == 'test' ? 1 : 0,
+				'preauth'         => $this->method->preauth,
 				'description'     => 'Оплата заказа №' . $orderNumber,
 				'success_url'     => $this->method->successUrl . $linkAppend,
 				'fail_url'        => $this->method->failUrl . $linkAppend,
@@ -211,7 +206,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 				'client_name'     => $order['details']['BT']->first_name . ' ' . $order['details']['BT']->last_name,
 				'client_email'    => $order['details']['BT']->email,
 				'receipt_contact' => $order['details']['BT']->email,
-				'receipt_items'   => $receipt->getJson(),
+				'receipt_items'   => $this->getReceipt($order),
 				'unix_timestamp'  => time(),
 				'sysinfo'         => json_encode($sysinfo),
 				'salt'            => ModulbankHelper::getSalt(),
@@ -527,7 +522,49 @@ class plgVmPaymentModulbank extends vmPSPlugin
 			return null;
 		}
 
+		if ($data->order_status == $this->method->statusForCapture && $this->method->preauth) {
+			$db = JFactory::getDBO();
+			$db->setQuery("SELECT ROUND(payment_order_total,2) as amount, transaction_id FROM #__virtuemart_payment_plg_modulbank WHERE virtuemart_order_id={$data->virtuemart_order_id} order by id desc");
+			$transaction = $db->loadObject();
+			$receiptJson = $this->getReceipt($order);
+			$data        = [
+				'merchant'        => $this->method->merchantId,
+				'amount'          => $transaction->amount,
+				'transaction'     => $transaction->transaction_id,
+				'receipt_contact' => $order['details']['BT']->email,
+				'receipt_items'   => $receiptJson,
+				'unix_timestamp'  => time(),
+				'salt'            => ModulbankHelper::getSalt(),
+			];
+
+			$key = $this->method->mode == 'test' ? $this->method->secretKeyTest : $this->method->secretKey;
+			$this->log($data, 'capture');
+			$response = ModulbankHelper::capture($data, $key);
+			$this->log($response, 'capture_result');
+			return null;
+		}
+
 		return null;
+	}
+
+	private function getReceipt($order)
+	{
+		$paymentCurrency        = CurrencyDisplay::getInstance($method->payment_currency);
+		$totalInPaymentCurrency = $paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false);
+		if (method_exists($paymentCurrency, "roundForDisplay")) {
+			$totalInPaymentCurrency = $paymentCurrency->roundForDisplay($totalInPaymentCurrency, $method->payment_currency);
+		} else {
+			$totalInPaymentCurrency = round($totalInPaymentCurrency, 2);
+		}
+		$receipt  = new ModulbankReceipt($this->method->taxSystem, $this->method->paymentMethodType, $totalInPaymentCurrency);
+		$shipping = $order['details']['BT']->order_shipment + $order['details']['BT']->order_shipment_tax;
+		foreach ($order['items'] as $item) {
+			$receipt->addItem($item->order_item_name, $item->product_final_price, $this->method->tax, $this->method->paymentObjectType, $item->product_quantity);
+		}
+		if ($shipping > 0) {
+			$receipt->addItem('Доставка', $shipping, $this->method->taxDelivery, $this->method->deliveryPaymentObjectType);
+		}
+		return $receipt->getJson();
 	}
 
 	public function plgVmOnUpdateOrderBEPayment($virtuemart_order_id)
@@ -561,11 +598,16 @@ class plgVmPaymentModulbank extends vmPSPlugin
 
 		$virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number);
 		$payment             = $this->getDataByOrderId($virtuemart_order_id);
+		$orderModel          = VmModel::getModel('orders');
+		$order               = $orderModel->getOrder($virtuemart_order_id);
 		$this->method        = $this->getVmPluginMethod($payment->virtuemart_paymentmethod_id);
 		$post                = JRequest::get('post');
 		$this->log($post, 'callback');
 		if ($this->checkSign()) {
-			if ($post['state'] === 'COMPLETE') {
+			if (
+				($post['state'] === 'COMPLETE' || $post['state'] === 'AUTHORIZED')
+				&& $order['details']['BT']->order_status != $this->method->statusForCapture
+			) {
 				$order                        = array();
 				$order['order_status']        = $this->method->statusSuccess;
 				$order['customer_notified']   = 1;
@@ -655,7 +697,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 		$merchant = $this->method->merchantId;
 		$this->log([$merchant, $transaction], 'getTransactionStatus');
 
-		$key = $this->method->mode == 'test' ? $this->method->secretKeyTest : $this->method->secretKey;;
+		$key = $this->method->mode == 'test' ? $this->method->secretKeyTest : $this->method->secretKey;
 
 		$result = ModulbankHelper::getTransactionStatus(
 			$merchant,
@@ -689,7 +731,7 @@ class plgVmPaymentModulbank extends vmPSPlugin
 			return false;
 		}
 		$orderModel = VmModel::getModel('orders');
-		$order = $orderModel->getOrder($virtuemart_order_id);
+		$order      = $orderModel->getOrder($virtuemart_order_id);
 		$this->emptyCart(null, $order_number);
 		$payment_name      = $this->renderPluginName($this->method);
 		$transactionResult = $this->getTransactionStatus(JRequest::getVar('transaction_id'));
@@ -705,10 +747,12 @@ class plgVmPaymentModulbank extends vmPSPlugin
 					break;
 				case 'COMPLETE':$paymentStatusText = "Оплата прошла успешно";
 					break;
+				case 'AUTHORIZED':$paymentStatusText = "Оплата прошла успешно";
+					break;
 				default:$paymentStatusText = "Ожидаем поступления средств";
 			}
 		}
-ob_start();
+		ob_start();
 		?>
 		<br />
 <table>
@@ -723,7 +767,7 @@ ob_start();
     </tr>
 	<tr>
 		<td>Статус оплаты</td>
-        <td><?php echo $paymentStatusText?></td>
+        <td><?php echo $paymentStatusText ?></td>
     </tr>
 
 </table>
@@ -731,8 +775,8 @@ ob_start();
 	<a class="vm-button-correct" href="<?php echo JRoute::_('index.php?option=com_virtuemart&view=orders&layout=details&order_number=' . $order['details']['BT']->order_number . '&order_pass=' . $order['details']['BT']->order_pass, false) ?>">Перейти на страницу заказа</a>
 	<br>
 		<?php
-		$html .= ob_get_clean();
-}
+$html .= ob_get_clean();
+	}
 
 	public function plgVmOnUserPaymentCancel()
 	{

@@ -6,7 +6,11 @@
     <authorUrl>https://modulbank.ru</authorUrl>
     <copyright>(c)АО КБ «Модульбанк»</copyright>
     <license></license>
+<<<<<<< HEAD
     <version>1.0.3</version>
+=======
+    <version>1.1.0</version>
+>>>>>>> hold
     <description>Modulbank Payment plugin</description>
     <languages>
 	<language tag="en-GB">en-GB.plg_vmpayment_modulbank.ini</language>
@@ -40,6 +44,11 @@
 				<option value="prod">Боевой</option>
      </field>
 
+     <field type="list" name="preauth" default="0" label="Предавторизация" description="">
+                <option value="0">Нет</option>
+                <option value="1">Да</option>
+     </field>
+
     <field type="link" name="successUrl"  size="50" label="Адрес для перехода после успешной оплаты"
              default="index.php?option=com_virtuemart&amp;view=vmplg&amp;task=pluginresponsereceived" description="" />
     <field type="link" name="failUrl"  size="50" label="Адрес для перехода после ошибки при оплате"
@@ -51,6 +60,7 @@
      <field name="statusForPayment" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус для оплаты" description="" />
      <field name="statusSuccess" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус оплаченного заказа" description="" />
      <field name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
+     <field name="statusForCapture" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус для подтверждения оплаты" description="Если включена предавторизация, то будет отправлен запрос подтверждения предавторизованного платежа" />
      <field name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
     <field type="vmtitle" default="Печать чеков"/>
      <field type="list" name="taxSystem" label="Система налогооблажения" default="1">
@@ -149,9 +159,13 @@
              default="" description="" />
     <param type="text" name="secretKeyTest"  size="50" label="Тестовый секретный ключ"
              default="" description="" />
-     <param type="list" name="mode" default="1" label="Режим" description="">
-                <option value="1">JYES</option>
-                <option value="0">JNO</option>
+     <param type="list" name="mode" default="test" label="Режим" description="">
+                <option value="test">Тестовый</option>
+                <option value="prod">Боевой</option>
+     </param>
+     <param type="list" name="preauth" default="0" label="Предавторизация" description="">
+                <option value="0">Нет</option>
+                <option value="1">Да</option>
      </param>
 
     <param type="link" name="successUrl"  size="50" label="Адрес для перехода после успешной оплаты"
@@ -165,6 +179,7 @@
      <param name="statusForPayment" type="vmorderstate" scope="com_virtuemart" default="U" label="Статус для оплаты" description="" />
      <param name="statusSuccess" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_MODULBANK_STATUS_SUCCESS" description="VMPAYMENT_MODULBANK_STATUS_SUCCESS_DESC" />
      <param name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
+     <param name="statusForCapture" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус для подтверждения оплаты" description="Если включена предавторизация, то будет отправлен запрос подтверждения предавторизованного платежа" />
      <param name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
     <param type="vmtitle" default="Печать чеков"/>
      <param type="list" name="taxSystem" label="Система налогооблажения" default="1">
