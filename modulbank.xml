@@ -6,7 +6,7 @@
     <authorUrl>https://modulbank.ru</authorUrl>
     <copyright>(c)АО КБ «Модульбанк»</copyright>
     <license></license>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <description>Modulbank Payment plugin</description>
     <languages>
 	<language tag="en-GB">en-GB.plg_vmpayment_modulbank.ini</language>
@@ -129,7 +129,7 @@
      </field>
      <field type="logs" name="logSize"  size="50" label="Ограничение размеров лога (Mb)"
              default="10" description="" />
-	<field name="countries" type="vmcountries"  scope="com_virtuemart" default="" label="VMPAYMENT_MODULBANK_COUNTRIES" description="VMPAYMENT_MODULBANK_COUNTRIES_DESC"/>
+	<field name="countries" type="vmcountries" multiple="true" scope="com_virtuemart" default="" label="VMPAYMENT_MODULBANK_COUNTRIES" description="VMPAYMENT_MODULBANK_COUNTRIES_DESC"/>
     <field name="payment_currency" type="vmacceptedcurrency" default="" label="VMPAYMENT_MODULBANK_CURRENCY" description="VMPAYMENT_MODULBANK_CURRENCY_DESC" />
 	<field name="min_amount" type="text"  label="VMPAYMENT_MODULBANK_MIN_AMOUNT" description="VMPAYMENT_MODULBANK_MIN_AMOUNT_EXPLAIN" />
 	<field name="max_amount" type="text"  label="VMPAYMENT_MODULBANK_MAX_AMOUNT" description="VMPAYMENT_MODULBANK_MAX_AMOUNT_EXPLAIN" />
