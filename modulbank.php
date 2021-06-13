@@ -77,6 +77,8 @@ class plgVmPaymentModulbank extends vmPSPlugin
 				'paymentMethodType'         => array('', 'string'),
 				'logging'                   => array('', 'string'),
 				'logSize'                   => array('', 'string'),
+				'show_custom_pm'            => array(0, 'int'),
+				'custom_pm_list'            => array(0, 'int'),
 			);
 		}
 		$this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
@@ -211,7 +213,13 @@ class plgVmPaymentModulbank extends vmPSPlugin
 				'sysinfo'         => json_encode($sysinfo),
 				'salt'            => ModulbankHelper::getSalt(),
 			];
+
+			if ($this->method->show_custom_pm) {
+				$data['show_payment_methods'] = json_encode($this->method->custom_pm_list);
+			}
+
 			$key = $this->method->mode == 'test' ? $this->method->secretKeyTest : $this->method->secretKey;
+
 
 			$data['signature'] = ModulbankHelper::calcSignature($key, $data);
 

@@ -6,7 +6,7 @@
     <authorUrl>https://modulbank.ru</authorUrl>
     <copyright>(c)АО КБ «Модульбанк»</copyright>
     <license></license>
-    <version>1.1.1</version>
+    <version>1.3.0</version>
     <description>Modulbank Payment plugin</description>
     <languages>
 	<language tag="en-GB">en-GB.plg_vmpayment_modulbank.ini</language>
@@ -58,6 +58,16 @@
      <field name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
      <field name="statusForCapture" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус для подтверждения оплаты" description="Если включена предавторизация, то будет отправлен запрос подтверждения предавторизованного платежа" />
      <field name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
+     <field type="list" name="show_custom_pm" default="0" label="Отображать определённые способы оплаты" description="">
+                <option value="0">Все доступные</option>
+                <option value="1">Из списка ниже</option>
+     </field>
+     <field type="list" name="custom_pm_list" default="" multiple="multiple" label="Отображаемые варианты оплаты" description="Для отображения отдельных методов оплаты выберите интересующие из списка">
+        <option value="card">Оплата по карте</option>
+        <option value="sbp">Система быстрых платежей</option>
+        <option value="googlepay">GooglePay</option>
+        <option value="applepay">ApplePay</option>
+     </field>
     <field type="vmtitle" default="Печать чеков"/>
      <field type="list" name="taxSystem" label="Система налогооблажения" default="1">
         <option value="osn">общая СН</option>
@@ -177,6 +187,16 @@
      <param name="orderStatusRefund" type="vmorderstate" scope="com_virtuemart" default="R" label="Статус заказа при возврате" description="" />
      <param name="statusForCapture" type="vmorderstate" scope="com_virtuemart" default="C" label="Статус для подтверждения оплаты" description="Если включена предавторизация, то будет отправлен запрос подтверждения предавторизованного платежа" />
      <param name="paymentMessage" type="textarea" label="Сообщение после оформления заказа" description="Для отложенной оплаты, будет показано если статус для оплаты не будет совпадать со статусом заказа после оформления"/>
+     <param type="list" name="show_custom_pm" default="0" label="Отображать определённые способы оплаты" description="">
+                <option value="0">Все доступные</option>
+                <option value="1">Из списка ниже</option>
+     </param>
+     <param type="list" name="custom_pm_list" default="" label="Отображаемые варианты оплаты" description="Удерживайте Ctrl, чтобы выбрать несколько">
+        <option value="card">Оплата по карте</option>
+        <option value="sbp">Система быстрых платежей</option>
+        <option value="googlepay">GooglePay</option>
+        <option value="applepay">ApplePay</option>
+     </param>
     <param type="vmtitle" default="Печать чеков"/>
      <param type="list" name="taxSystem" label="Система налогооблажения" default="1">
         <option value="osn">общая СН</option>
